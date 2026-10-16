@@ -1,5 +1,10 @@
 # Physics, Engineering, and Market Facts for Reasoning About PV Detection
 
+## WHY:
+
+avoid misconceptions in reasoning about a solution
+
+
 ## Physics and Energy
 
 1. **Energy and power are different.** kWh is energy, the amount used over time. kW is power, the rate of use. A 15-minute reading of 0.5 kWh means an average power of 2 kW for that interval.
