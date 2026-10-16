@@ -1,0 +1,27 @@
+{
+  "out_of_fold": {
+    "F1": 0.9767441860465116,
+    "precision": 1.0,
+    "recall": 0.9545454545454546,
+    "D": 0.7634920634920634,
+    "P": 0.42677673352679024,
+    "main_score": 85.81091493306693,
+    "true_positives": 21,
+    "date_MAE_days_on_true_positives": 19.571428571428573,
+    "capacity_MAPE_on_true_positives": 0.6946441577304509
+  },
+  "target_score": 95.0,
+  "target_reached": false,
+  "original_score": 76.3933942794709,
+  "improvement_points": 9.417520653596029,
+  "protocol": {
+    "presence_epochs": 60,
+    "date_capacity_epochs": 30,
+    "folds": 5,
+    "seed": 42,
+    "capacity_shrinkage": 0.5,
+    "evaluation": "development model selection; not hidden-test performance",
+    "fingerprints_see": "validation/cache_manifest.json"
+  },
+  "selection_bias_note": "Model choices were compared on these development folds; hidden-test performance is unknown."
+}
