@@ -1,0 +1,413 @@
+{
+ "F1": 0.9767441860465116,
+ "D": 0.611,
+ "P": 0.0,
+ "score": 77.33,
+ "tp": 21,
+ "fp": 0,
+ "fn": 1,
+ "n": 40,
+ "note": "pasted from the server: seed 2, train on 218 human labels, test on 40",
+ "per_customer": [
+  {
+   "customer_id": "POD13",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.985,
+   "pv_installation_date_true": "2024-02-05",
+   "pv_installation_date_pred": "2024-04-02",
+   "pv_capacity_kwp_true": 174.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD14",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2024-02-24",
+   "pv_installation_date_pred": "2024-02-25",
+   "pv_capacity_kwp_true": 191.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD15",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2023-09-25",
+   "pv_installation_date_pred": "2024-06-21",
+   "pv_capacity_kwp_true": 478.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD16",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.901,
+   "pv_installation_date_true": "2023-08-16",
+   "pv_installation_date_pred": "2023-10-25",
+   "pv_capacity_kwp_true": 27.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD18",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2025-06-13",
+   "pv_installation_date_pred": "2025-06-14",
+   "pv_capacity_kwp_true": 179.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD20",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.966,
+   "pv_installation_date_true": "2025-03-25",
+   "pv_installation_date_pred": "2025-02-26",
+   "pv_capacity_kwp_true": 74.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD21",
+   "pv_installed_true": true,
+   "pv_installed_pred": false,
+   "pv_prob": 0.223,
+   "pv_installation_date_true": "2024-03-14",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": 166.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD22",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.999,
+   "pv_installation_date_true": "2024-10-11",
+   "pv_installation_date_pred": "2024-10-11",
+   "pv_capacity_kwp_true": 150.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD23",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.563,
+   "pv_installation_date_true": "2023-11-15",
+   "pv_installation_date_pred": "2023-11-15",
+   "pv_capacity_kwp_true": 32.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD26",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.975,
+   "pv_installation_date_true": "2024-05-22",
+   "pv_installation_date_pred": "2022-01-01",
+   "pv_capacity_kwp_true": 85.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD27",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2023-08-03",
+   "pv_installation_date_pred": "2022-01-01",
+   "pv_capacity_kwp_true": 127.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD28",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2024-04-26",
+   "pv_installation_date_pred": "2024-04-25",
+   "pv_capacity_kwp_true": 639.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD29",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2024-05-28",
+   "pv_installation_date_pred": "2024-05-28",
+   "pv_capacity_kwp_true": 159.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD30",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2024-09-11",
+   "pv_installation_date_pred": "2024-09-11",
+   "pv_capacity_kwp_true": 173.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD31",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2023-06-21",
+   "pv_installation_date_pred": "2023-06-20",
+   "pv_capacity_kwp_true": 221.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD34",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.927,
+   "pv_installation_date_true": "2023-10-06",
+   "pv_installation_date_pred": "2023-10-06",
+   "pv_capacity_kwp_true": 278.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD35",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.991,
+   "pv_installation_date_true": "2023-07-10",
+   "pv_installation_date_pred": "2023-09-18",
+   "pv_capacity_kwp_true": 64.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD36",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2024-07-22",
+   "pv_installation_date_pred": "2024-07-21",
+   "pv_capacity_kwp_true": 204.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD37",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.687,
+   "pv_installation_date_true": "2025-10-17",
+   "pv_installation_date_pred": "2025-10-16",
+   "pv_capacity_kwp_true": 178.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD40",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2024-09-03",
+   "pv_installation_date_pred": "2024-07-18",
+   "pv_capacity_kwp_true": 60.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD41",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 1.0,
+   "pv_installation_date_true": "2023-05-25",
+   "pv_installation_date_pred": "2023-05-26",
+   "pv_capacity_kwp_true": 158.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD42",
+   "pv_installed_true": true,
+   "pv_installed_pred": true,
+   "pv_prob": 0.839,
+   "pv_installation_date_true": "2023-09-05",
+   "pv_installation_date_pred": "2023-09-06",
+   "pv_capacity_kwp_true": 959.0,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD48",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.029,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD52",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.007,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD54",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.104,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD56",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.138,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD57",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.081,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD58",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.003,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD59",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.412,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD60",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.078,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD61",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.092,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD62",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.138,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD63",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.106,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD65",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.0,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD66",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.014,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD67",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.081,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD68",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.15,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD69",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.065,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD72",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.077,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  },
+  {
+   "customer_id": "POD73",
+   "pv_installed_true": false,
+   "pv_installed_pred": false,
+   "pv_prob": 0.057,
+   "pv_installation_date_true": "",
+   "pv_installation_date_pred": "",
+   "pv_capacity_kwp_true": null,
+   "pv_capacity_kwp_pred": null
+  }
+ ]
+}

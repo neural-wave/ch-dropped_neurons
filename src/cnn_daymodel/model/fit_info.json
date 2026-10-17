@@ -1,0 +1,8 @@
+{
+ "date_D_train": {
+  "score": 0.348989898989899,
+  "dip": 0.2823232323232323
+ },
+ "date_signal": "score",
+ "cap_loo_P_true_dates": null
+}

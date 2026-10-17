@@ -1,0 +1,12 @@
+# generated / large
+cache/
+artifacts/
+plots/
+.venv/
+__pycache__/
+*.pyc
+nohup.out
+.DS_Store
+# written by inference.py in the current folder
+predictions.csv
+pv_extensions_predictions.csv
