@@ -1,0 +1,58 @@
+# Configuration of the CNN PV-detection pipeline. Paths are relative to this folder unless absolute.
+# Command-line flags of the scripts override the values here; PV_CONFIG=<file> selects another config file.
+
+paths:
+  data_dir: ../data               # folder holding the three input files below
+  labelled_ts: labelled.csv       # consumption time series of the labelled customers (test set)
+  unlabelled_ts: unlabelled.csv   # consumption time series of the unlabelled customers (training pool)
+  labels_csv: labels.csv          # labels of the labelled customers
+  cache_dir: cache
+  artifact_dir: artifacts
+  plots_dir: plots
+
+seed: 42
+
+data:
+  slots: 96                 # 15-minute intervals per day
+  timezone: Europe/Zurich
+  base_day: "2015-01-01"    # day index 0
+  min_valid_slots: 80       # drop days with fewer measured slots
+  id_prefix: "POD"          # keep only customer ids starting with this prefix (empty = keep all non-null ids)
+  output_sep: ";"           # separator of written label / prediction files
+
+image:
+  mode: relsmooth           # heat | relsmooth | both
+  calendar: true            # add day-of-year sine/cosine channels (calendar feature from the timestamps)
+  shoulder_slots: [[24, 36], [68, 80]]   # 06:00-09:00 and 17:00-20:00: the per-day reference level
+  median_filter: [15, 3]    # days x slots
+  clip: 3.0                 # log2 ratio clip (factor 8) before scaling to [-1, 1]
+  heat_gamma: 0.6           # 'heat' mode only
+
+model:
+  hidden: 32                # temporal feature width
+  dropout: 0.25
+
+train:
+  epochs: 150
+  lr: 0.002
+  weight_decay: 0.001
+  min_crop: 120             # window length range in days (one window per customer per epoch)
+  max_crop: 365
+  day_loss_weight: 1.0      # loss = BCE(customer) + day_loss_weight * BCE(days)
+  conv_lr_mult: 0.2         # learning-rate factor of a pretrained conv stack
+  threshold: 0.5            # P(PV) >= threshold -> PV
+
+pretrain:
+  steps: 3000
+  batch: 48
+  crop: 180                 # days per crop
+  lr: 0.001
+  weight_decay: 0.0001
+  mask_frac: 0.4            # fraction of patches hidden
+  patch: [12, 12]           # days x slots
+  visible_loss_weight: 0.3
+
+date:
+  smooth_days: 7
+  min_segment: 14           # days on each side of the change point
+  start_threshold: 0.5      # 'before' mean above this -> PV predates the data -> first day
