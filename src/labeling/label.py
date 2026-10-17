@@ -33,19 +33,29 @@ def read_labels():  # tolerant: old 3-column rows get an empty confidence
 if os.path.exists(out): read_labels().to_csv(out, index=False)  # repair the file once to the 4-column layout
 
 queue, s = [], {}
+rng = np.random.default_rng(42)  # fixed seed: same batches every run, still different on each pull
+
+def to_rgb(z):  # values in [0, 1] -> uint8 RGB with the viridis colour map
+    return (plt.cm.viridis(z)[..., :3] * 255).astype(np.uint8)
 
 def draw():  # image as RGB array: x = day, y = timestep (midnight at bottom)
     if not queue: return None, "**Batch done.** Pull different 10?"
-    img = s["img"]; mean = img.values.mean(); m = np.abs(img.values - mean).max() + 1e-9
-    z = (img.values - mean) / m / 2 + 0.5  # mean -> 0.5 (white), below -> blue, above -> red
-    s["k"] = k = max(1, 900 // z.shape[1])  # widen short series
-    rgb = (plt.cm.RdBu_r(z)[::-1, :, :3] * 255).astype(np.uint8).repeat(4, axis=0).repeat(k, axis=1)
-    if s["start"] is not None: rgb[:, s["start"] * k: s["start"] * k + max(k, 4)] = [0, 0, 0]  # black: red is now part of the colour scale
-    bar = (plt.cm.RdBu_r(np.linspace(0, 1, rgb.shape[1]))[None, :, :3] * 255).astype(np.uint8).repeat(20, axis=0)
-    rgb = np.vstack([rgb, np.full((10, rgb.shape[1], 3), 255, np.uint8), bar])  # colour legend at the bottom
-    picked = img.columns[s["start"]].date() if s["start"] is not None else "no click = day 0"
-    return rgb, (f"**{queue[0]}** ({len(queue)} left) · days {img.columns[0].date()} → {img.columns[-1].date()} · **PV start: {picked}**"
-                 f"  \ncolour bar (bottom): blue {mean - m:.1f} kWh → white = mean {mean:.1f} kWh → red {mean + m:.1f} kWh")
+    img, start = s["img"], s["start"]
+    m = img.values.max() + 1e-9                          # colour range: 0 (dark purple) .. m (yellow)
+    s["k"] = k = max(1, 900 // img.shape[1])             # widen short series to ~900 px
+
+    pic = to_rgb(img.values[::-1] / m)                   # flip rows so midnight is at the bottom
+    pic = pic.repeat(4, axis=0).repeat(k, axis=1)        # enlarge: 4 px per timestep, k px per day
+    if start is not None: pic[:, start * k: start * k + max(k, 4)] = [255, 0, 0]  # red PV start line
+
+    bar = to_rgb(np.linspace(0, 1, pic.shape[1]))[None].repeat(20, axis=0)  # colour legend
+    gap = np.full((10, pic.shape[1], 3), 255, np.uint8)
+    pic = np.vstack([pic, gap, bar])
+
+    picked = img.columns[start].date() if start is not None else "no click = day 0"
+    info = (f"**{queue[0]}** ({len(queue)} left) · days {img.columns[0].date()} → {img.columns[-1].date()} · **PV start: {picked}**"
+            f"  \ncolour bar (bottom): 0 kWh (left) → {m:.1f} kWh (right)")
+    return pic, info
 
 def load():  # next customer from the queue
     if queue:
@@ -56,7 +66,7 @@ def load():  # next customer from the queue
 def new_batch():  # 10 random customers not labeled yet
     done = set(read_labels().customer_id)
     todo = pd.Series(df.customer_id.unique()).loc[lambda x: ~x.isin(done)]
-    queue[:] = list(todo.sample(min(10, len(todo))))
+    queue[:] = list(todo.sample(min(10, len(todo)), random_state=rng))
     return load()
 
 def click(evt: gr.SelectData):  # x pixel -> day index
