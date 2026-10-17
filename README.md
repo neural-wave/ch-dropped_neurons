@@ -62,4 +62,5 @@ NEXT STEPS:
 -> manually review
 -> if it works we are golden
 -> otherwise we could pretreain on the large labeled dataset we found and retry
+-> adding a way to measure how sure we are of the result (bbox probability score)
 ```
