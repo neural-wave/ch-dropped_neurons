@@ -1,124 +1,120 @@
-"""Usage: python inference.py path/to/test_set.csv [out_dir]  -> predictions.csv, pv_extensions_predictions.csv (default: CWD).
+"""PV detection submission: one entry point, four tasks.
 
-Rule detector + bell gate, encoder-score date, kWp = 50/50 log blend of the C9v2 kWp (deficit ridge + year-over-year) and
-the kWp network, GatedGuard extensions. Any per-customer failure falls back to the classical date / the median kWp / the
-C9v2 kWp alone / no extension; a global failure writes everything as FALSE.
+    python inference.py path/to/test_set.csv
+
+  1. PV yes/no        cnn_daymodel: 2-D CNN on the customer's (days x hours) image
+  2. install date     cnn_daymodel: day encoder + gradient-boosting day score, change point
+  3. initial kWp      kWp network: per-day CNN + transformer around the install date
+  4. extensions       pv_extension: weekly CNN + BiGRU (nothing / installed / extended)
+
+Writes predictions.csv and pv_extensions_predictions.csv to the current working directory (UTF-8, ';', TRUE/FALSE,
+YYYY-MM-DD, one row per customer of the test file). Only the consumption values and their timestamps are used.
+See README.md.
 """
-import os
-import pickle
+import importlib.util
 import sys
+import time
 import warnings
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-
 import numpy as np
 import pandas as pd
+import torch
 
-from pvsteps import (capacity, capacity_yoy, date, day_features, day_score, detect_gate, encoder, extensions_gated, kwp_net,
-                     load, write)
+HERE = Path(__file__).resolve().parent
+COMP = HERE / 'components'
+sys.path.insert(0, str(COMP / 'cnn_daymodel'))
+warnings.filterwarnings('ignore', category=RuntimeWarning)
 
-warnings.filterwarnings("ignore", category=RuntimeWarning)  # all-NaN slices on sparse customers are handled downstream (capacity_yoy relies on it)
-MODEL = HERE / "model"
-COLS = ["customer_id", "pv_installation_date", "pv_capacity_kwp"]
-NET_WEIGHT = 0.5  # share of the kWp network in the log-space kWp blend
+from data import date_to_day, load_timeseries, per_customer  # noqa: E402  (cnn_daymodel)
+from features import capacity_features                       # noqa: E402
+from pipeline import PVPipeline                               # noqa: E402
 
-
-def warn(msg):
-    print(f"[inference] WARNING: {msg}", file=sys.stderr)
-
-
-def scored_days(state, df):
-    """Day encoder -> day features -> day score, per customer; a customer that fails is skipped (its date comes from the rule detector)."""
-    tabs, bad = {}, 0
-    try:
-        enc = encoder.load_encoder(MODEL / "encoder_shipped.pt")
-        days = load.ail_days(df)
-    except Exception as e:
-        warn(f"encoder path failed ({type(e).__name__}); all dates use the classical date")
-        return tabs
-    for cid, d in days.items():
-        try:
-            scale = encoder.customer_scale(d["X"])
-            tab = day_features.day_table(d["X"], d["days"], encoder.encode_days(enc, d["X"], scale), scale)
-            tabs[cid] = day_score.score_days(state["ail"]["day_model"], tab)
-        except Exception:
-            bad += 1
-    if bad:
-        warn(f"{bad} customer(s) without encoder date, using the classical date")
-    return tabs
+MAIN_COLS = ['customer_id', 'pv_installed', 'pv_installation_date', 'pv_capacity_kwp']
+EXT_COLS = ['customer_id', 'extension_date', 'pv_capacity_after_extension_kwp']
+PEAK_TO_KWP = 1.3          # cnn_daymodel fallback: kWp ~ 1.3 x summer midday peak reduction (kW)
+CHUNK = 100
 
 
-def base_kwp(state, dms, cid):
-    med = state["live"]["det"]["kwp"]
-    try:
-        k = float(capacity.kwp(state["live"]["cap"], dms[cid]))
-    except Exception:
-        k = float(med)
-    return k if np.isfinite(k) and k > 0 else float(med)
+def load_module(name, path):
+    """Import a component's inference.py under its own name (all three components call it inference.py)."""
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
-def blend_kwp(df, pred):
-    """C9v2 kWp blended with the network kWp at the same date; customers the network cannot score keep the C9v2 kWp."""
-    try:
-        net = kwp_net.kwp(MODEL / "kwp_net.pt", df, dict(zip(pred["customer_id"], pred["pv_installation_date"])))
-    except Exception as e:
-        warn(f"kWp network failed ({type(e).__name__}); C9v2 kWp used for every customer")
-        return pred["pv_capacity_kwp"]
-    missing = int((~pred["customer_id"].isin(list(net))).sum())
-    if missing:
-        warn(f"{missing} customer(s) without network kWp, C9v2 kWp used")
-    return [float(np.exp((1 - NET_WEIGHT) * np.log(k) + NET_WEIGHT * np.log(net[c]))) if c in net else k
-            for c, k in zip(pred["customer_id"], pred["pv_capacity_kwp"])]
+def log(msg):
+    print(f'[inference] {msg}', flush=True)
 
 
-def predict(state, df):
-    dms, tabs = load.daily_matrix(df), scored_days(state, df)
-    found = detect_gate.rule_detect(state["live"]["det"], dms)
-    off = detect_gate.bell_gate(dms, found)
-    rows, base = [], {}
-    for c in sorted(found["pv"]):
-        base[c] = base_kwp(state, dms, c)
-        if c in off:
-            continue
-        try:
-            d = date.ssl_date(tabs[c]) if c in tabs else found["date"][c]
-        except Exception:
-            d = found["date"][c]
-        try:
-            k = capacity_yoy.kwp_at(state["yoy"], dms[c], d, base[c])
-        except Exception:
-            k = base[c]
-        if not (np.isfinite(k) and k > 0):
-            k = base[c]
-        rows.append((c, pd.Timestamp(d), k))
-    pred = pd.DataFrame(rows, columns=COLS)
-    pred["pv_capacity_kwp"] = blend_kwp(df, pred)
-    try:
-        ext = extensions_gated.gated_extensions(dms, base, off)
-    except Exception as e:
-        warn(f"extension prediction failed ({type(e).__name__}); header-only extensions file")
-        ext = pd.DataFrame(columns=extensions_gated.COLS)
-    return pred, ext
+def detect_and_date(test_csv):
+    """Tasks 1-2 with cnn_daymodel -> (all ids in file order, {cid: (pv, date str, fallback kWp)})."""
+    pipe = PVPipeline.load(COMP / 'cnn_daymodel' / 'model')
+    raw = load_timeseries(test_csv, verbose=False, require_pod=False)
+    data = per_customer(raw)
+    # output order = order of first appearance in the test file (ids kept as strings)
+    sep = ';' if open(test_csv, encoding='utf-8').readline().count(';') else ','
+    col = pd.read_csv(test_csv, sep=sep, usecols=['customer_id'], dtype=str)['customer_id'].dropna()
+    ids = list(dict.fromkeys(c for c in col if c.strip()))
+    out = {}
+    cids = sorted(data)
+    for i in range(0, len(cids), CHUNK):
+        prep = pipe.prepare({c: data[c] for c in cids[i:i + CHUNK]})
+        for _, r in pipe.predict(prep).iterrows():
+            c, pv = r['customer_id'], bool(r['pv_installed'])
+            date, fallback = (str(r['pv_installation_date'])[:10] if pv else ''), np.nan
+            if pv:
+                f = capacity_features(prep[c]['X'], prep[c]['days'], date_to_day(date), prep[c]['scale'], prep[c]['sun'])
+                fallback = max(PEAK_TO_KWP * f['peak_red_kw'], 1.0)
+            out[c] = (pv, date, fallback)
+    return ids, out
 
 
 def main():
-    if len(sys.argv) not in (2, 3) or not os.path.isfile(sys.argv[1]):
-        sys.exit("usage: python inference.py path/to/test_set.csv [out_dir]")
-    out_dir = sys.argv[2] if len(sys.argv) == 3 else "."
-    ids = load.customer_ids(sys.argv[1])
-    pred, ext = pd.DataFrame(columns=COLS), pd.DataFrame(columns=extensions_gated.COLS)
+    if len(sys.argv) != 2 or not Path(sys.argv[1]).is_file():
+        raise SystemExit('usage: python inference.py path/to/test_set.csv')
+    t0 = time.time()
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    ids, det = detect_and_date(Path(sys.argv[1]))
+    pv = {c: v for c, v in det.items() if v[0]}
+    log(f'detection + date (cnn_daymodel): {len(ids)} customers, {len(pv)} PV  [{time.time() - t0:.0f}s]')
+
+    kwp_mod = load_module('kwp_component', COMP / 'kwp' / 'inference.py')
+    cons = kwp_mod.load_consumption(sys.argv[1])          # UTC day grid shared by the kWp and extension models
+    kwp = {c: v[2] for c, v in pv.items()}                 # fallback first
     try:
-        with open(MODEL / "state.pkl", "rb") as f:
-            state = pickle.load(f)
-        pred, ext = predict(state, load.read_series(sys.argv[1]))
+        net, scale, post = kwp_mod.load_model(COMP / 'kwp' / 'kwp.pt', device)
+        todo = [c for c in pv if c in cons]
+        if todo:
+            sites = [(*cons[c], kwp_mod.date_to_epoch_day(pv[c][1])) for c in todo]
+            for c, k in zip(todo, np.exp(kwp_mod.predict_log_kwp(net, sites, post, device)) * scale):
+                if np.isfinite(k) and k > 0:
+                    kwp[c] = float(k)
+        log(f'kWp (kWp network): {len(todo)} customers  [{time.time() - t0:.0f}s]')
     except Exception as e:
-        warn(f"loading/prediction failed ({type(e).__name__}); everything falls back to FALSE")
-    write.write_outputs(out_dir, ids, pred, ext)
-    print(f"[inference] {len(ids)} customers, {len(pred)} PV, {len(ext)} extensions")
+        log(f'WARNING kWp network failed ({type(e).__name__}); cnn_daymodel fallback kWp used')
+
+    ext = pd.DataFrame(columns=EXT_COLS)
+    try:
+        ext_mod = load_module('extension_component', COMP / 'pv_extension' / 'inference.py')
+        model, threshold = ext_mod.load_model(COMP / 'pv_extension' / 'ext_net.pt', device)
+        ext = ext_mod.predict_extensions(model, threshold, {c: cons[c] for c in pv if c in cons}, kwp,
+                                         {c: ext_mod.eday(pv[c][1]) for c in pv}, device=device)
+        log(f'extensions (pv_extension): {len(ext)} event(s)  [{time.time() - t0:.0f}s]')
+    except Exception as e:
+        log(f'WARNING extension model failed ({type(e).__name__}); header-only extension file')
+
+    rows = []
+    for c in ids:
+        p, date, _ = det.get(c, (False, '', np.nan))
+        rows.append([c, 'TRUE' if p else 'FALSE', date if p else '', f'{kwp[c]:.2f}' if p else ''])
+    pd.DataFrame(rows, columns=MAIN_COLS).to_csv('predictions.csv', sep=';', index=False, encoding='utf-8')
+    ext[EXT_COLS].to_csv('pv_extensions_predictions.csv', sep=';', index=False, encoding='utf-8')
+    log(f'wrote predictions.csv ({len(rows)} rows, {len(pv)} PV) and pv_extensions_predictions.csv '
+        f'({len(ext)} rows) in {time.time() - t0:.0f}s')
 
 
-if __name__ == "__main__":
-    np.random.seed(0)
+if __name__ == '__main__':
     main()

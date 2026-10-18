@@ -175,6 +175,29 @@ def capacity_ratio(d0, X, day, prev_day=None, window=90):
     return float(np.clip(b / a, 1.1, 4.0))
 
 
+def predict_extensions(model, threshold, cons, kwp0=None, start=None, allow_at_install=False, device='cpu'):
+    """-> DataFrame(customer_id, extension_date, pv_capacity_after_extension_kwp).
+
+    cons: {customer: (first_day, X)}. kwp0: {customer: initial kWp} of the PV customers (None = every customer, no
+    capacity). start: {customer: installation epoch day}; extensions within 60 days after it are dropped unless
+    allow_at_install."""
+    start = start or {}
+    rows = []
+    for cid, (d0, X) in cons.items():
+        if kwp0 is not None and cid not in kwp0:
+            continue                                   # not a PV customer according to the main pipeline
+        events, _ = extension_events(model, d0, X, threshold, device)
+        cap, prev = (kwp0 or {}).get(cid, np.nan), None
+        for day, _ in events:
+            if cid in start and day <= start[cid] + 60 and not allow_at_install:
+                continue                               # the main pipeline calls this the initial installation
+            cap = cap * capacity_ratio(d0, X, day, prev) if np.isfinite(cap) else np.nan
+            rows.append((cid, str(EPOCH_DAY0 + np.timedelta64(int(day), 'D')),
+                         f'{cap:.2f}' if np.isfinite(cap) and cap > 0 else ''))
+            prev = day
+    return pd.DataFrame(rows, columns=['customer_id', 'extension_date', 'pv_capacity_after_extension_kwp'])
+
+
 # ----------------------------------------------------------------------------- command line
 
 def main():
@@ -192,26 +215,13 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model, threshold = load_model(a.weights, device)
     cons = load_consumption(a.consumption)
-    kwp0, start = {}, {}
+    kwp0, start = None, None
     if a.predictions:
         pr = read_csv(a.predictions)
         pr = pr[pr.pv_installed.astype(str).str.strip().str.upper().isin(['TRUE', '1'])]
         kwp0 = dict(zip(pr.customer_id, pd.to_numeric(pr.pv_capacity_kwp, errors='coerce')))
         start = {c: eday(d) for c, d in zip(pr.customer_id, pr.pv_installation_date) if isinstance(d, str) and d}
-    rows = []
-    for cid, (d0, X) in cons.items():
-        if a.predictions and cid not in kwp0:
-            continue                                   # not a PV customer according to the main pipeline
-        events, _ = extension_events(model, d0, X, threshold, device)
-        cap, prev = kwp0.get(cid, np.nan), None
-        for day, _ in events:
-            if cid in start and day <= start[cid] + 60 and not a.allow_at_install:
-                continue                               # the main pipeline calls this the initial installation
-            cap = cap * capacity_ratio(d0, X, day, prev) if np.isfinite(cap) else np.nan
-            date = str(EPOCH_DAY0 + np.timedelta64(int(day), 'D'))
-            rows.append((cid, date, f'{cap:.2f}' if np.isfinite(cap) and cap > 0 else ''))
-            prev = day
-    out = pd.DataFrame(rows, columns=['customer_id', 'extension_date', 'pv_capacity_after_extension_kwp'])
+    out = predict_extensions(model, threshold, cons, kwp0, start, a.allow_at_install, device)
     out.to_csv(a.out, sep=';', index=False, encoding='utf-8')
     print(f'wrote {a.out}: {len(out)} extension(s) for {out.customer_id.nunique()} of {len(cons)} customers')
 

@@ -8,7 +8,7 @@ challenge_set : the organizers' folder with energy_consumption_dev.csv, pv_label
 What it does: copies src/pv_submission_combined to a scratch folder, builds a Python 3.12 venv there exactly as the
 organizers would (pip install -r requirements.txt), then runs `python inference.py <csv>` (their one-argument command,
 outputs in the working directory) on: a synthetic mock file, 5 random real customers, the same 5 with leading-zero ids,
-the labelled extension customer POD13, and all 40 customers (md5 compared with TEAM_NOTES). Every output is validated
+the labelled extension customer POD13, and all 40 customers (md5 compared with the reference in README.md). Every output is validated
 against the PDF format rules by test/validate.py. Nothing is written inside the repo.
 """
 import argparse
@@ -22,8 +22,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 SUB = REPO / "src" / "pv_submission_combined"
-MD5_PRED_EXPECTED = "3ea24e409d5e27f57f562a7f85587746"
-MD5_EXT_EXPECTED = "99b0e71ebf7e631849738e3efed020d5"
+MD5_PRED_EXPECTED = "32ccb951673530650a817af9ae08181f"
+MD5_EXT_EXPECTED = "e6c913cd7b8920ca634fc6f62b1869cc"
 
 
 def say(msg):
@@ -95,7 +95,7 @@ def main():
     if platform.system() == "Linux":
         run([vpy, "-m", "pip", "install", "-q", "torch==2.14.1", "--index-url", "https://download.pytorch.org/whl/cpu"])
     run([vpy, "-m", "pip", "install", "-q", "-r", sub / "requirements.txt"])
-    run([vpy, "-c", "import torch, sklearn, pandas, pyarrow; print('versions:', torch.__version__, sklearn.__version__, pandas.__version__, pyarrow.__version__)"])
+    run([vpy, "-c", "import torch, sklearn, pandas, numpy; print('versions:', torch.__version__, sklearn.__version__, pandas.__version__, numpy.__version__)"])
     inf, val = sub / "inference.py", REPO / "test" / "validate.py"
 
     def infer_and_validate(name, csv, labels, ext_labels):
@@ -166,12 +166,12 @@ def main():
                 g.write(line)
     infer_and_validate("pod13", s13, lab, ext)
 
-    say("6. all 40 customers, md5 against TEAM_NOTES")
+    say("6. all 40 customers, md5 against the README reference")
     out40 = infer_and_validate("all40", ts, lab, ext)
     p, e = md5(out40 / "predictions.csv"), md5(out40 / "pv_extensions_predictions.csv")
     print(f"predictions.csv md5 {p} (expected {MD5_PRED_EXPECTED})\nextensions      md5 {e} (expected {MD5_EXT_EXPECTED})")
     if (p, e) != (MD5_PRED_EXPECTED, MD5_EXT_EXPECTED):
-        die("md5 mismatch: the pipeline output changed vs TEAM_NOTES")
+        die("md5 mismatch: the pipeline output changed vs the README reference")
 
     say("7. hand-in folder clean?")
     stray = [q.name for q in SUB.iterdir()

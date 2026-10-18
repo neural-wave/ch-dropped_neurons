@@ -49,8 +49,13 @@ The challenge time-series file. Separator `;` or `,` (detected automatically); e
 
 ## Input 2 (optional) — `predictions.csv`
 
-The main-task output (`customer_id;pv_installed;pv_installation_date;pv_capacity_kwp`), e.g. from the combined
-C9v2 + kWp-network submission. Used for: which customers have PV, their installation date, and their initial kWp.
+The main-task output (`customer_id;pv_installed;pv_installation_date;pv_capacity_kwp`), e.g. the `predictions.csv`
+of the submission (`src/pv_submission_combined`). Used for: which customers have PV, their installation date, and
+their initial kWp.
+
+**In the submission** this model is called directly by `src/pv_submission_combined/inference.py` (task 4), with the
+presence and dates of `src/cnn_daymodel` and the kWp of `src/kWp`; you only need this standalone script to test the
+extension model on its own.
 
 ## Output — `pv_extensions_predictions.csv`
 
@@ -103,9 +108,14 @@ With 11 cases these figures are rough. The capacity-after estimate is not valida
 ## Label conflict to know about
 
 For 3 dev customers, the manual labels put an extension on the exact date that the **official** labels call the
-**initial installation**. The main pipeline follows the official labels, so with `predictions.csv` those events are
-dropped by default (consistent with how the challenge is scored). `--allow-at-install` keeps them (consistent with the
-manual labels). On the 40 dev customers: default 1 extension reported, `--allow-at-install` 4.
+**initial installation**. Extensions within 60 days after the installation date in `predictions.csv` are dropped
+unless `--allow-at-install` is given, so the outcome depends on which installation date the main pipeline predicts:
+
+- With the submission's presence/date model (`src/cnn_daymodel`, trained on the team's labels), the installation is
+  dated well before those extensions, so they are kept: on the 40 dev customers 3 extensions are reported, 1 matches
+  the official label and 2 are false alarms under the official labels.
+- With a date model that follows the official labels, the installation falls on the extension date and they are
+  dropped (1 extension reported); `--allow-at-install` keeps them (4).
 
 ## Retraining
 

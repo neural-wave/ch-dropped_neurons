@@ -1,5 +1,9 @@
 # CNN + day model: PV detection from 15-minute consumption
 
+> **Role in the submission:** this folder provides tasks 1 (PV yes / no) and 2 (installation date) of
+> `src/pv_submission_combined`. The submission copies its model files via `src/pv_submission_combined/build.sh`;
+> capacity there comes from `src/kWp` and extensions from `src/pv_extension`, not from the capacity rule below.
+
 Solution for the AIL × Neural Wave challenge: for each customer, does it have a PV plant, since when, and how large.
 Two models share the work. A 2-D CNN reads the customer's whole (days × hours) image and decides **PV yes / no**.
 A per-day gradient-boosting model, fed by a self-supervised day encoder, scores every day as "PV active" and the

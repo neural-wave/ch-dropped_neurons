@@ -1,7 +1,8 @@
 # kWp inference — how to use
 
 Estimates the **nominal installed PV capacity (kWp)** of a customer from its 15-minute grid-withdrawal data only.
-It does not detect PV or date the installation: it takes those from a detection model (e.g. the LSTM pipeline)
+It does not detect PV or date the installation: it takes those from a detection model (in the submission,
+`src/pv_submission_combined`, they come from `src/cnn_daymodel`)
 and fills in the capacity.
 
 ## Files
