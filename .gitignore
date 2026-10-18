@@ -1,0 +1,19 @@
+# virtual environments, anywhere in the tree
+.venv/
+.venv*/
+venv/
+venv*/
+env/
+.env/
+.conda/
+pyvenv.cfg
+
+# python caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# os / editor
+.DS_Store

@@ -1,0 +1,5 @@
+customer_id;pv_installed;pv_installation_date;pv_capacity_kwp
+MOCK_NOPV;FALSE;;
+MOCK_PV;TRUE;2022-09-15;10
+0042;TRUE;2022-06-01;8
+MOCK_SHORT;FALSE;;
