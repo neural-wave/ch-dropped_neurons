@@ -17,3 +17,10 @@ __pycache__/
 
 # os / editor
 .DS_Store
+
+# customer-level data from the AIL dataset: never commit
+.DS_Store
+data/
+**/labels/
+*.csv
+!test/mock/*.csv
