@@ -16,6 +16,7 @@ data is used, and no LLM is part of the pipeline.
 | `src/labeling/` | Tool used to label the unlabelled series by hand. |
 | `data/` | Manual labels of unlabelled customers and CNN-inferred labels used during training. No AIL time series. |
 | `test/` | Scripts to test the submission: sample cutter, synthetic input generator, output validator, full check. |
+| `requirements.txt` | Environment for running and testing from the repository root (includes the submission's pins). |
 | `docs/TESTING.md` | Step-by-step runbook of every command in this README, with expected outputs. |
 
 ## 1. Running the submission
@@ -44,9 +45,16 @@ An optional second argument sets the output folder: `python inference.py test_se
 
 ## 2. Testing the submission
 
-All commands are run from the repository root with the venv of section 1 active (or any Python 3.12 environment with
-the same requirements). `CHALLENGE` stands for the folder holding `energy_consumption_dev.csv`, `pv_labels_dev.csv`
-and `pv_extensions_labels_dev.csv`.
+All commands are run from the repository root in a Python 3.12 environment built from the root `requirements.txt`
+(the same pins as the submission):
+
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+`CHALLENGE` stands for the folder holding `energy_consumption_dev.csv`, `pv_labels_dev.csv` and
+`pv_extensions_labels_dev.csv`.
 
 **Full check in one command** (fresh venv in a scratch folder, synthetic input, random real sample, leading-zero ids,
 the labelled extension customer, all 40 customers with checksum, format validation of every output):

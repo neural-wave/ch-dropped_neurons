@@ -1,0 +1,3 @@
+# Environment to run and test the submission from the repository root (Python 3.12).
+# Same pinned packages as the submission itself; kept in one place.
+-r src/pv_submission_combined/requirements.txt
